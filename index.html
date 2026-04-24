@@ -1,73 +1,734 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DevWrap — SC-ECE Presents</title>
-  <meta name="description" content="SC-ECE Presents DevWrap — From Sketch to Solution. A hackathon experience built for builders." />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TriageFlow · Emergency Room Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a0e;
+    --panel: #0a1520;
+    --border: #1a2e42;
+    --red: #ff2d2d;
+    --orange: #ff6b00;
+    --yellow: #ffc200;
+    --green: #00e676;
+    --cyan: #00d4ff;
+    --dim: #3a5a72;
+    --text: #c8dde8;
+    --mono: 'Share Tech Mono', monospace;
+    --cond: 'Barlow Condensed', sans-serif;
+    --body: 'Barlow', sans-serif;
+  }
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="src/css/styles.css" />
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,100,160,0.15) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(26,46,66,0.3) 39px, rgba(26,46,66,0.3) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(26,46,66,0.15) 39px, rgba(26,46,66,0.15) 40px);
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    background: rgba(5,10,14,0.95);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 100;
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--red);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    display: flex; align-items: center; justify-content: center;
+    animation: pulse-icon 2s ease-in-out infinite;
+    position: relative;
+  }
+  .logo-icon::after {
+    content: '+';
+    position: absolute;
+    color: #fff;
+    font-family: var(--cond);
+    font-weight: 900;
+    font-size: 18px;
+    line-height: 1;
+  }
+  @keyframes pulse-icon {
+    0%,100%{ box-shadow: 0 0 0 0 rgba(255,45,45,0.6); }
+    50%{ box-shadow: 0 0 0 8px rgba(255,45,45,0); }
+  }
+
+  .logo-text {
+    font-family: var(--cond);
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 0.05em;
+    color: #fff;
+  }
+  .logo-text span { color: var(--red); }
+  .logo-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+  }
+
+  .header-right {
+    display: flex; align-items: center; gap: 20px;
+  }
+
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 0.1em;
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: blink 1s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .mci-toggle {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 14px;
+    border: 1px solid var(--orange);
+    background: transparent;
+    color: var(--orange);
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .mci-toggle:hover, .mci-toggle.active {
+    background: var(--orange);
+    color: #000;
+  }
+  .mci-toggle.active { animation: mci-flash 1s ease-in-out infinite; }
+  @keyframes mci-flash {
+    0%,100%{ background: var(--orange); border-color: var(--orange); }
+    50%{ background: var(--red); border-color: var(--red); }
+  }
+
+  /* MAIN LAYOUT */
+  .app { padding: 20px 24px; display: grid; gap: 20px; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.orange::before { background: var(--orange); }
+  .stat-card.yellow::before { background: var(--yellow); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.cyan::before { background: var(--cyan); }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: var(--cond);
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+  }
+  .stat-card.red .stat-value { color: var(--red); }
+  .stat-card.orange .stat-value { color: var(--orange); }
+  .stat-card.yellow .stat-value { color: var(--yellow); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.cyan .stat-value { color: var(--cyan); }
+  .stat-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 4px;
+  }
+
+  /* BED CAPACITY */
+  .bed-bar {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .bed-slot {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+  .bed-slot.occupied { background: var(--red); }
+  .bed-slot.ghost { background: var(--orange); }
+  .bed-slot.free { background: var(--green); }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* QUEUE PANEL */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+  }
+  .panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: #fff;
+    text-transform: uppercase;
+  }
+  .panel-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  /* PATIENT QUEUE */
+  .queue-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .queue-table thead th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .patient-row {
+    border-bottom: 1px solid rgba(26,46,66,0.5);
+    transition: background 0.2s;
+    animation: row-in 0.4s ease both;
+    cursor: pointer;
+  }
+  .patient-row:hover { background: rgba(0,212,255,0.03); }
+  @keyframes row-in {
+    from { opacity:0; transform: translateX(-10px); }
+    to { opacity:1; transform: translateX(0); }
+  }
+
+  .patient-row td {
+    padding: 12px 16px;
+    vertical-align: middle;
+  }
+
+  .sev-badge {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 28px; height: 28px;
+    font-family: var(--cond);
+    font-weight: 900;
+    font-size: 13px;
+    border-radius: 2px;
+  }
+  .sev-1 { background: var(--red); color: #fff; animation: sev1-pulse 1.5s ease infinite; }
+  .sev-2 { background: var(--orange); color: #000; }
+  .sev-3 { background: var(--yellow); color: #000; }
+  .sev-4 { background: var(--green); color: #000; }
+  .sev-5 { background: var(--dim); color: #fff; }
+  @keyframes sev1-pulse {
+    0%,100%{ box-shadow: 0 0 0 0 rgba(255,45,45,0.7); }
+    50%{ box-shadow: 0 0 0 6px rgba(255,45,45,0); }
+  }
+
+  .patient-id {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cyan);
+  }
+  .patient-name {
+    font-family: var(--cond);
+    font-weight: 600;
+    font-size: 14px;
+    color: #fff;
+  }
+  .patient-chief {
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .priority-score {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: bold;
+  }
+  .score-high { color: var(--red); }
+  .score-med { color: var(--orange); }
+  .score-low { color: var(--yellow); }
+  .score-stable { color: var(--dim); }
+
+  .wait-time {
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .wait-urgent { color: var(--red); }
+  .wait-warn { color: var(--orange); }
+  .wait-ok { color: var(--green); }
+
+  .bed-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    color: var(--cyan);
+    background: rgba(0,212,255,0.05);
+  }
+  .bed-ghost {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: rgba(255,107,0,0.05);
+  }
+  .bed-none {
+    color: var(--dim);
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .decay-bar {
+    width: 60px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .decay-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s linear;
+  }
+
+  /* SIDEBAR */
+  .sidebar { display: grid; gap: 16px; }
+
+  /* BED MAP */
+  .bed-map {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 16px;
+  }
+  .bed-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .bed-cell.occ { border-color: rgba(255,45,45,0.5); background: rgba(255,45,45,0.08); color: var(--red); }
+  .bed-cell.gst { border-color: rgba(255,107,0,0.5); background: rgba(255,107,0,0.08); color: var(--orange); animation: ghost-blink 2s ease infinite; }
+  .bed-cell.free { border-color: rgba(0,230,118,0.3); background: rgba(0,230,118,0.05); color: var(--green); }
+  .bed-cell:hover { transform: scale(1.05); }
+  @keyframes ghost-blink {
+    0%,100%{ opacity:1; } 50%{opacity:0.6; }
+  }
+  .bed-num { font-size: 14px; font-weight: bold; }
+  .bed-status-label { font-size: 8px; }
+
+  /* AMBULANCE ALERTS */
+  .alert-list { padding: 0; list-style: none; }
+  .alert-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(26,46,66,0.5);
+    display: flex; gap: 10px; align-items: flex-start;
+    animation: alert-slide 0.5s ease both;
+  }
+  @keyframes alert-slide {
+    from { opacity:0; transform: translateY(-8px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+  .alert-icon {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .alert-icon.red { background: var(--red); animation: blink 0.8s ease infinite; }
+  .alert-icon.orange { background: var(--orange); animation: blink 1.2s ease infinite; }
+  .alert-icon.yellow { background: var(--yellow); }
+  .alert-eta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cyan);
+    margin-bottom: 2px;
+  }
+  .alert-info {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .alert-sev {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 2px;
+  }
+  .alert-reserved {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--orange);
+    margin-top: 3px;
+  }
+
+  /* VITALS DECAY LEGEND */
+  .decay-legend {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .decay-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .decay-name {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .decay-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .decay-fill-anim {
+    height: 100%;
+    border-radius: 3px;
+    animation: decay-grow 2s ease forwards;
+  }
+  @keyframes decay-grow {
+    from { width: 0%; }
+  }
+  .decay-pct {
+    font-family: var(--mono);
+    font-size: 10px;
+    width: 32px;
+    text-align: right;
+  }
+
+  /* MCI BANNER */
+  .mci-banner {
+    display: none;
+    padding: 12px 24px;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(255,45,45,0.15),
+      rgba(255,45,45,0.15) 10px,
+      rgba(255,107,0,0.08) 10px,
+      rgba(255,107,0,0.08) 20px
+    );
+    border: 1px solid var(--red);
+    margin-bottom: -8px;
+    animation: mci-appear 0.3s ease;
+  }
+  .mci-banner.show { display: flex; align-items: center; gap: 16px; }
+  @keyframes mci-appear {
+    from { opacity:0; transform: translateY(-10px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+  .mci-text {
+    font-family: var(--cond);
+    font-weight: 900;
+    font-size: 18px;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    text-transform: uppercase;
+  }
+  .mci-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--orange);
+  }
+
+  /* CLOCK */
+  .sys-clock {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* SEVERITY GUIDE */
+  .sev-guide {
+    display: flex;
+    gap: 12px;
+    padding: 0 24px 16px;
+    flex-wrap: wrap;
+  }
+  .sev-item {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  .add-patient-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+  }
+  .add-patient-btn:hover { background: var(--cyan); color: #000; }
+
+  @media (max-width: 900px) {
+    .stats-bar { grid-template-columns: repeat(3, 1fr); }
+    .main-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .stats-bar { grid-template-columns: 1fr 1fr; }
+  }
+</style>
 </head>
 <body>
 
-  <div id="root">
-
-    <!-- ── LOADER SCREEN ── -->
-    <div id="loader">
-      <div id="loader-title">SC-ECE<br/>PRESENTS</div>
-      <div id="loader-line"></div>
-      <div id="loader-subtitle">INNOVATION × DESIGN × ENGINEERING</div>
-      <div id="loader-hint">
-        💡 <strong>Ready to build?</strong><br/>
-        Start editing <code>index.html</code> to customize this page
-      </div>
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon"></div>
+    <div>
+      <div class="logo-text">Triage<span>Flow</span></div>
+      <div class="logo-sub">EMERGENCY ROOM ENGINE · PS-06</div>
     </div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    <div class="sys-clock" id="clock">--:--:--</div>
+    <button class="mci-toggle" id="mciBtn" onclick="toggleMCI()">⚠ MCI MODE</button>
+  </div>
+</header>
 
-    <!-- ── DEVWRAP SCREEN ── -->
-    <div id="devwrap">
+<!-- MCI BANNER -->
+<div class="mci-banner" id="mciBanner">
+  <div>
+    <div class="mci-text">⚠ MASS CASUALTY INCIDENT ACTIVE</div>
+    <div class="mci-sub">Prioritization switched to survival probability · Expectant cases deprioritized</div>
+  </div>
+</div>
 
-      <!-- Marquee bar -->
-      <div id="marquee-bar">
-        <div id="marquee-track">
-          <span>SC-ECE PRESENTS · DEVWRAP · FROM SKETCH TO SOLUTION ·</span>
-          <span>SC-ECE PRESENTS · DEVWRAP · FROM SKETCH TO SOLUTION ·</span>
-          <span>SC-ECE PRESENTS · DEVWRAP · FROM SKETCH TO SOLUTION ·</span>
-          <span>SC-ECE PRESENTS · DEVWRAP · FROM SKETCH TO SOLUTION ·</span>
-          <span>SC-ECE PRESENTS · DEVWRAP · FROM SKETCH TO SOLUTION ·</span>
-          <span>SC-ECE PRESENTS · DEVWRAP · FROM SKETCH TO SOLUTION ·</span>
-          <span>SC-ECE PRESENTS · DEVWRAP · FROM SKETCH TO SOLUTION ·</span>
-          <span>SC-ECE PRESENTS · DEVWRAP · FROM SKETCH TO SOLUTION ·</span>
+<!-- MAIN APP -->
+<div class="app">
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-card red">
+      <div class="stat-label">CRITICAL (SEV 1-2)</div>
+      <div class="stat-value" id="statCritical">4</div>
+      <div class="stat-sub">require immediate care</div>
+    </div>
+    <div class="stat-card cyan">
+      <div class="stat-label">TOTAL QUEUE</div>
+      <div class="stat-value" id="statTotal">12</div>
+      <div class="stat-sub">patients waiting</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">BED OCCUPANCY</div>
+      <div class="stat-value" id="statBeds">10<span style="font-size:18px">/16</span></div>
+      <div class="bed-bar" id="bedBar"></div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-label">AVG WAIT TIME</div>
+      <div class="stat-value" id="statWait">18<span style="font-size:18px">m</span></div>
+      <div class="stat-sub">across all patients</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">AMBULANCES INCOMING</div>
+      <div class="stat-value" id="statAmb">3</div>
+      <div class="stat-sub">beds pre-reserved</div>
+    </div>
+  </div>
+
+  <!-- SEVERITY GUIDE -->
+  <div class="sev-guide">
+    <span style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;margin-right:4px">SEV:</span>
+    <div class="sev-item"><span class="sev-badge sev-1">1</span>Immediate / Resuscitation</div>
+    <div class="sev-item"><span class="sev-badge sev-2">2</span>Emergent</div>
+    <div class="sev-item"><span class="sev-badge sev-3">3</span>Urgent</div>
+    <div class="sev-item"><span class="sev-badge sev-4">4</span>Less Urgent</div>
+    <div class="sev-item"><span class="sev-badge sev-5">5</span>Non-Urgent</div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- PRIORITY QUEUE -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Priority Queue</div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <div class="panel-meta" id="queueMeta">auto-sorted by urgency + wait decay</div>
+          <button class="add-patient-btn" onclick="addRandomPatient()">+ ADMIT</button>
         </div>
       </div>
+      <table class="queue-table">
+        <thead>
+          <tr>
+            <th>SEV</th>
+            <th>PATIENT</th>
+            <th>CHIEF COMPLAINT</th>
+            <th>PRIORITY</th>
+            <th>WAIT</th>
+            <th>BED</th>
+            <th>DECAY</th>
+          </tr>
+        </thead>
+        <tbody id="queueBody"></tbody>
+      </table>
+    </div>
 
-      <!-- Pixel grid (populated by JS) -->
-      <div id="pixel-grid"></div>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
 
-      <div id="devwrap-title">devwrap</div>
-      <div id="devwrap-tagline">From Sketch to Solution</div>
-
-      <div id="welcome-msg">
-        Welcome, Builders. 🚀<br/>
-        <span>Turn your ideas into interfaces.</span>
+      <!-- BED MAP -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Bed Map</div>
+          <div class="panel-meta">16 total</div>
+        </div>
+        <div class="bed-map" id="bedMap"></div>
       </div>
 
-      <div id="devwrap-hint">
-        💡 <strong>Ready to customize?</strong><br/>
-        Start editing <code>index.html</code> to make changes
+      <!-- AMBULANCE ALERTS -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Incoming Ambulances</div>
+          <div class="panel-meta">ghost reservations active</div>
+        </div>
+        <ul class="alert-list" id="alertList"></ul>
       </div>
 
-    </div><!-- /#devwrap -->
+      <!-- VITALS DECAY -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Vitals Decay Index</div>
+          <div class="panel-meta">wait-risk score</div>
+        </div>
+        <div class="decay-legend" id="decayLegend"></div>
+      </div>
 
-  </div><!-- /#root -->
+    </div>
+  </div>
+</div>
 
-  <!-- Scripts -->
-  <script src="src/js/main.js"></script>
+<script>
+// ==================== DATA ====================
+let mciMode = false;
+let tickCount = 0;
 
-</body>
-</html>
+const COMPLAINTS = [
+  'Chest pain / STEMI', 'Respiratory arrest', 'Hemorrhagic stroke', 'Polytrauma - MVA',
+  'Septic shock', 'Anaphylaxis', 'Acute MI', 'Gunshot wound',
+  'Acute appendicitis', 'Fractured femur', 'Severe asthma', 'Diabetic ketoacidosis',
+  'Moderate abdominal pain', 'Laceration - deep', 'Hypertensive crisis', 'Seizure',
+  'Mild chest discomfort', 'Ankle sprain', 'Headache', 'UTI symptoms',
+  'Nausea / vomiting', 'Sore throat', 'Rash - non-urgent'
+];
+const SEV_MAP = { 1: 'red', 2: 'orange', 3: 'yellow', 4: 'green', 5: '#3a5a72' };
+const SEV_COLORS = { 1: '#ff2d2d', 2: '#ff6b00', 3: '#ffc200', 4: '#00e676', 5: '#3a5a72' };
+const SEV_BASE_PRIORITY = { 1: 90, 2: 70, 3: 50, 4: 30, 5: 10 };
+const NAMES = [
+  'M. Torres','R. Patel','L. Chen','A. Johnson','K. Williams','S. Okonkwo',
+  'J. Martinez','F. Al-Amin','D. Kim','E. Novak','H. Osei','T. Nakamura',
+  'B. Agyeman','C. Rivera','G. Schmidt','N. Sharma'
+];
+
+let patientId = 100;
+let patients = [];
+const BEDS = 16;
+let bedState = new Array(BEDS).fill('free'); // 'free','occupied','ghost'
+let ghostBeds = []; // indices reserved for ambulances
+
+const AMBULANCES = [
+  { eta: 4, severity: 1, info: 'Male ~45 · Cardiac arrest · CPR in progress', reservedBed: null },
+  { eta: 11, severity: 2, info: 'Female ~28 · Polytrauma MVA · GCS 10', reservedBed: null },
+  { eta: 19, severity: 3, info: 'Male ~67 · Chest pain · BP 180/110', reservedBed: null },
+];
+
+function getNextFreeBed(excludeGhost = false) {
+  for (let i = 0; i < BEDS; i++) {
+    if (bedState[i] === 'free') return i;
+  }
+  return null;
+}
+
+function initBeds() {
+  // Pre-assign some beds
+  const occupied = [0,1,2,3,5,7,9,10,12,14];
+  occupied.forEach(i => bedState[i] = 'occupied');
+  // Reserve ghost beds for ambulances
+  AMBULANCES.forEach((amb, idx) => {
+    const freeBed = g
